@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, 'Segoe UI', Arial, sans-serif;
+  color: var(--text);
+  background: var(--background);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
+  --background: #f7f7f8;
+  --surface: #ffffff;
+  --text: #1c1c1e;
+  --muted: #757d8e;
+  --subtle: #8590a2;
+  --border: #e3e5ea;
+  --avatar: #e7e8ec;
+  --avatar-text: #4b5563;
+  --accent: #990cf5;
+  --accent-hover: #8105d5;
+  --shadow: 0 12px 18px -9px #00000038, 0 3px 8px #00000008;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --background: #111216;
+  --surface: #1c1d23;
+  --text: #f4f4f6;
+  --muted: #a5a8b8;
+  --subtle: #9ba0b2;
+  --border: #363842;
+  --avatar: #30323d;
+  --avatar-text: #c1c5d3;
+  --accent: #a733ff;
+  --accent-hover: #b452ff;
+  --shadow: 0 12px 24px -8px #00000066;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--text);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-outline: var(--border);
+  --color-avatar: var(--avatar);
+  --color-avatar-foreground: var(--avatar-text);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --shadow-card: var(--shadow);
+}
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@layer base {
+  body { min-width: 320px; }
+  button, a, input { -webkit-tap-highlight-color: transparent; }
+  button, a { touch-action: manipulation; }
+  button { cursor: pointer; }
+  a:hover { color: var(--accent); }
+  button:focus-visible, a:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+  }
+}

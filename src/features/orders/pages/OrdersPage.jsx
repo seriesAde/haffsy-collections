@@ -1,0 +1,7 @@
+import { useState } from 'react'
+import { Link } from 'react-router'
+import { useDemo } from '../../admin/DemoContext'
+import { PageHeading, SearchBox } from '../../admin/components/AdminUI'
+import { primaryClass, tableClass } from '../../admin/components/styles'
+import { money } from '../../../lib/documents'
+export default function OrdersPage(){const {invoices,orders}=useDemo(),[query,setQuery]=useState('');const rows=invoices.filter(i=>(i.id+' '+i.customer).toLowerCase().includes(query.toLowerCase()));return <><PageHeading title="Orders & Payments" subtitle="Manage fulfillment and payment for each invoice."><Link className={primaryClass} to="/admin/invoices/new">Create invoice / order</Link></PageHeading><div className="mb-6 flex"><SearchBox value={query} onChange={setQuery} placeholder="Search invoice or customer..."/></div><div className="overflow-auto rounded-xl border border-outline"><table className={tableClass}><thead><tr>{['Invoice','Customer','Invoice total','Fulfillment','Payment','Delivery status','Action'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map(i=><tr key={i.id}><td className="text-accent">{i.id}</td><td>{i.customer}</td><td>{money(i.amount,i.currency)}</td><td>{orders[i.id]?.method||'Not configured'}</td><td className="text-muted">Awaiting backend</td><td className="text-muted">Awaiting backend</td><td><Link className="text-accent" to={'/admin/orders/'+i.id}>Open order</Link></td></tr>)}{!rows.length&&<tr><td colSpan={7}>No matching orders.</td></tr>}</tbody></table></div></>}

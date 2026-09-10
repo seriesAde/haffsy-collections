@@ -1,0 +1,12 @@
+import { ProductGallery } from '../components/ProductImages'
+import { useState } from 'react'
+import { Link, useParams } from 'react-router'
+import { useInventory } from '../InventoryContext'
+import { Field, PageHeading } from '../../admin/components/AdminUI'
+import { inputClass, primaryClass, secondaryClass } from '../../admin/components/styles'
+export default function ProductDetailsPage(){
+ const {id}=useParams(),{products,updateProduct,categories}=useInventory(),[notice,setNotice]=useState('');const product=products.find(p=>p.id===id)
+ if(!product)return <p>Product not found. <Link to="/admin/products">Back to products</Link></p>
+ function save(e){e.preventDefault();const values=Object.fromEntries(new FormData(e.currentTarget));if(!values.name.trim()||!values.category.trim()){setNotice('Name and category are required.');return}const failure=updateProduct(id,{...values,name:values.name.trim(),category:values.category.trim(),price:Number(values.price),reorder:Number(values.reorder)});setNotice(failure||'Product updated.')}
+ return <><PageHeading title={product.name} subtitle={'SKU: '+product.sku}/><div className="mb-6 flex flex-wrap gap-3"><Link className={secondaryClass} to="/admin/products">All products</Link><Link className={primaryClass} to={'/admin/stock-adjustments?product='+id}>Adjust stock ({product.stock})</Link><Link className={secondaryClass} to={'/admin/categories/'+encodeURIComponent(product.category)}>View category</Link></div><ProductGallery key={product.id} product={product}/><form onSubmit={save} className="grid gap-5 rounded-xl border border-outline p-6 md:grid-cols-2">{[['Name','name','text'],['Category','category','text'],['Selling price','price','number'],['Reorder level','reorder','number'],['Supplier','supplier','text'],['Barcode','barcode','text']].map(([label,name,type])=><Field key={name} label={label}>{name==='category'?<select className={inputClass} name="category" defaultValue={product.category}>{categories.map(c=><option key={c}>{c}</option>)}</select>:<input className={inputClass} name={name} type={type} min="0" step={name==='price'?'0.01':'1'} defaultValue={product[name]??''} required={['name','category','price','reorder'].includes(name)}/>}</Field>)}<div className="md:col-span-2"><Field label="Description"><textarea className={inputClass} name="description" rows={4} defaultValue={product.description||''}/></Field></div><button className={primaryClass}>Save changes</button>{notice&&<p role="status">{notice}</p>}</form></>
+}

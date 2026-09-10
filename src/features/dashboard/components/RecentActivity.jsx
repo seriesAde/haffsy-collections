@@ -1,0 +1,5 @@
+import { Link } from 'react-router'
+import StatusBadge from '../../../components/StatusBadge'
+export default function RecentActivity({items}) {
+ return <section className="rounded-xl border border-outline p-6"><h2 className="mb-5 text-xl font-bold">Recent Activity</h2><div className="space-y-4">{items.map(item=><Link key={item.key} to={item.to} className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-background p-4 hover:text-foreground hover:ring-1 hover:ring-accent/30"><div className="min-w-0"><p className="font-medium">{item.type} <span className="ml-1 break-all text-accent">{item.label}</span></p><p className="mt-2 text-sm text-muted">{item.description}</p></div><div className="text-right"><p className="font-medium">{item.amount}</p><div className="mt-2 flex items-center gap-2"><StatusBadge status={item.status}/><time className="text-xs text-muted" dateTime={item.date}>{new Date(item.date).toLocaleDateString()}</time></div></div></Link>)}{!items.length&&<p className="py-10 text-center text-muted">Your latest invoices, quotations and stock changes will appear here.</p>}</div></section>
+}

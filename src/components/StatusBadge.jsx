@@ -1,0 +1,2 @@
+import { cn } from '../lib/utils'
+export default function StatusBadge({status}) {return <span className={cn('inline-flex rounded-full px-3 py-1 text-xs font-medium', ['Active','Paid','Accepted','Completed'].includes(status)?'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300':['Rejected','Overdue','Inactive'].includes(status)?'bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-300':'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300')}>{status}</span>}
