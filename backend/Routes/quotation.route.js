@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import { getQuotations, getQuotationById, createQuotation, updateQuotation, convertQuotation } from "../Controllers/quotation.controller.js";
+import { protect, authorize, staffRoles } from '../middlewares/auth.middleware.js';
+const router = Router();
+const staff = authorize(...staffRoles);
+router.get('/quotations', protect, getQuotations);
+router.get('/quotations/:id', protect, getQuotationById);
+router.post('/quotations', protect, staff, createQuotation);
+router.patch('/quotations/:id', protect, staff, updateQuotation);
+router.post('/quotations/:id/convert', protect, staff, convertQuotation);
+export default router;

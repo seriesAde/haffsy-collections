@@ -9,7 +9,7 @@ export default function CategorySelect({ initialValue = '' }) {
   const [retry, setRetry] = useState(0)
   useEffect(() => {
     const controller = new AbortController()
-    listCategories({ demoCategories: categories, signal: controller.signal }).then(options => {
+    listCategories({ signal: controller.signal }).then(options => {
       if (!controller.signal.aborted) setResult({ options, error: '', ready: true })
     }).catch(() => { if (!controller.signal.aborted) setResult({ options: [], error: 'Could not load categories.', ready: true }) })
     return () => controller.abort()

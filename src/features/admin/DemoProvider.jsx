@@ -1,9 +1,23 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { DemoContext } from './DemoContext'
-import { customers as customerSeed, users as userSeed, invoices as invoiceSeed, defaultSettings } from './demoData'
-import { initialQuotations } from '../quotations/data'
+import { useAuth } from '../auth/AuthContext'
+import { api, list, fileUrl } from '../../services/api'
+import { existingCustomerId } from '../documents/customer.js'
+const documentRow=d=>({...d,apiId:d.id,id:d.number,customerId:d.customer,customer:d.customerName||'',date:d.createdAt?.slice(0,10),due:d.due?.slice(0,10),phone:d.guestContact?.phone||'',email:d.guestContact?.email||'',lines:d.lines.map((l,i)=>({...l,id:String(i)})),items:d.lines.reduce((n,l)=>n+l.quantity,0)})
 export default function DemoProvider({children}) {
- const [orders,setOrders]=useState({})
- const [customers,setCustomers]=useState(customerSeed),[users,setUsers]=useState(userSeed),[invoices,setInvoices]=useState(invoiceSeed),[quotations,setQuotations]=useState(initialQuotations),[settings,setSettings]=useState(defaultSettings)
- return <DemoContext.Provider value={{orders,setOrders,customers,setCustomers,users,setUsers,invoices,setInvoices,quotations,setQuotations,settings,setSettings}}>{children}</DemoContext.Provider>
+ const {user}=useAuth();const [state,setState]=useState({orders:{},customers:[],users:[],invoices:[],quotations:[],settings:{name:'',address:'',city:'',phone:'',email:'',currency:'NGN',tax:0}}),[error,setError]=useState(''),[loading,setLoading]=useState(true)
+ const refresh=useCallback(async()=>{
+ const {data:s}=await api('/settings');let next={orders:{},customers:[],users:[],invoices:[],quotations:[],settings:{...s,tax:s.taxRate}}
+ if(user){const [invoices,quotations,orders]=await Promise.all([list('/invoices'),list('/quotations'),list('/orders')]);next.invoices=[...invoices,...orders.filter(o=>o.invoice&&!invoices.some(i=>i.id===o.invoice.id)).map(o=>o.invoice)].map(documentRow);next.quotations=quotations.map(documentRow);next.orders=Object.fromEntries(orders.filter(o=>o.invoice || o.invoiceSnapshot).map(o=>[o.invoice?.number || o.invoiceSnapshot?.number,{...o,apiId:o.id,fee:o.deliveryFee,rider:o.rider?.id||'',status:o.stage,deliveryFeePending:!o.feeConfirmed}]));if(['Admin','Manager'].includes(user.role)){const people=await list('/users');const rows=people.map(u=>({...u,status:u.active?'Active':'Inactive',orders:orders.filter(o=>o.customer===u.id).length,spent:invoices.filter(i=>i.customer===u.id&&i.status==='Paid').reduce((n,i)=>n+i.amount,0),lastLogin:u.lastLogin||'Never'}));next.users=rows.filter(u=>u.role!=='Customer');next.customers=rows.filter(u=>u.role==='Customer')}}
+ setState(next);setError('')
+ },[user])
+ useEffect(()=>{let active=true;Promise.resolve().then(refresh).catch(e=>{if(active)setError(e.message)}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[refresh])
+ async function mutate(task){try{await task();await refresh();return true}catch(e){setError(e.message);throw e}}
+ function setDocuments(kind,update){return mutate(async()=>{const before=state[kind],after=typeof update==='function'?update(before):update;if(after.length<before.length)throw new Error('Document deletion is not supported by the backend.');for(const row of after){const old=before.find(r=>r.id===row.id);if(old===row)continue;const customerId=existingCustomerId(row,old,state.customers);const body={lines:row.lines.map(l=>({name:l.name,quantity:Number(l.quantity),price:Number(l.price),...(l.product?{product:l.product}:{})})),due:row.due,notes:row.notes||'',taxRate:Number(row.taxRate),currency:row.currency||state.settings.currency};if(customerId){body.customer=customerId;}else{body.guestContact={name:(row.customer||row.customerName||'').trim(),phone:row.phone||row.guestContact?.phone||'',...(row.email||row.guestContact?.email?{email:row.email||row.guestContact.email}:{})};}await api('/'+kind+(old?'/'+old.apiId:''),{method:old?'PATCH':'POST',body})}})}
+ async function savePerson(row,kind){return mutate(()=>{const body={name:row.name,email:row.email,phone:row.phone||'',address:[row.address,row.city].filter(Boolean).join(', '),role:kind==='customer'?'Customer':row.role,active:row.status!=='Inactive',...(!row.id?{password:row.password}:{})};return api('/users'+(row.id?'/'+row.id:''),{method:row.id?'PATCH':'POST',body})})}
+ return <DemoContext.Provider value={{...state,refresh,moveToOrder:invoice=>mutate(()=>api('/invoices/'+invoice.apiId+'/move-to-order',{method:'POST'})),savePerson,removePerson:id=>mutate(()=>api('/users/'+id,{method:'DELETE'})),setInvoices:update=>setDocuments('invoices',update),setQuotations:update=>setDocuments('quotations',update),convertQuotation:q=>mutate(()=>api('/quotations/'+q.apiId+'/convert',{method:'POST'})),
+ setSettings:values=>mutate(()=>api('/settings',{method:'PATCH',body:{name:values.name,email:values.email,phone:values.phone,address:values.address,city:values.city,currency:values.currency,taxRate:values.tax}})),
+ loadOrder:async id=>{const {data}=await api('/orders/'+id);return {...data,payments:data.payments.map(p=>({...p,date:p.createdAt,evidence:p.evidence?{url:fileUrl(p.evidence),name:'Payment evidence',type:'application/octet-stream'}:null}))}},
+ saveFulfillment:(id,body)=>mutate(()=>api('/orders/'+id,{method:'PATCH',body})),advanceOrder:(id,stage)=>mutate(()=>api('/orders/'+id+'/stage',{method:'POST',body:{stage}}))
+ }}>{error&&<p role="alert" className="bg-red-100 p-4 text-red-800">{error} <button onClick={()=>refresh().catch(e=>setError(e.message))}>Retry</button></p>}{loading?<p className="p-6">Loading business data�</p>:children}</DemoContext.Provider>
 }

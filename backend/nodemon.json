@@ -1,0 +1,19 @@
+{
+  "watch": [
+    "index.js",
+    "server.js",
+    "config",
+    "Controllers",
+    "Routes",
+    "middlewares",
+    "models",
+    "services",
+    "utilities"
+  ],
+  "ext": "js,json",
+  "ignore": [
+    "tests/**",
+    "node_modules/**"
+  ],
+  "exec": "node --env-file-if-exists=.env index.js"
+}

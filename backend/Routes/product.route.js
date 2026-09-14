@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { getProducts, getProductById, createProduct, updateProduct, archiveProduct, setProductAvailability } from "../Controllers/product.controller.js";
+import { protect, authorize, staffRoles } from '../middlewares/auth.middleware.js';
+const router = Router();
+const staff = authorize(...staffRoles);
+router.get('/products', getProducts);
+router.get('/inventory/products', protect, staff, getProducts);
+router.get('/products/:id', getProductById);
+router.post('/products', protect, staff, createProduct);
+router.patch('/products/:id', protect, staff, updateProduct);
+router.patch('/products/:id/availability', protect, authorize('Admin', 'Manager'), setProductAvailability);
+router.delete('/products/:id', protect, authorize('Admin', 'Manager'), archiveProduct);
+export default router;

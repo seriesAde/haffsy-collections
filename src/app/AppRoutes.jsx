@@ -1,3 +1,5 @@
+import SaleDetailsPage from '../features/reports/pages/SaleDetailsPage'
+import { RequireAuth } from '../features/auth/AuthProvider'
 import StoreLayout from '../layouts/StoreLayout'
 import HomePage from '../features/storefront/pages/HomePage'
 import ShopPage from '../features/storefront/pages/ShopPage'
@@ -31,7 +33,7 @@ import AuthPage from '../features/auth/pages/AuthPage'
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route path="/admin" element={<RequireAuth admin><AdminLayout /></RequireAuth>}>
         <Route index element={<DashboardPage />} />
         <Route path="dashboard" element={<Navigate to="/admin" replace />} />
         <Route path="sku-generator" element={<SkuGeneratorPage />} />
@@ -48,6 +50,7 @@ export default function AppRoutes() {
         <Route path="quotations/new" element={<CreateDocumentPage key="quotation" kind="quotation" />} />
         <Route path="invoices" element={<InvoicesPage />} />
         <Route path="invoices/new" element={<CreateDocumentPage key="invoice" kind="invoice" />} />
+        <Route path="sales-reports/:id" element={<SaleDetailsPage />} />
         <Route path="sales-reports" element={<SalesReportsPage />} />
         <Route path="customers" element={<CustomersPage />} />
         <Route path="users" element={<UsersPage />} />
@@ -66,7 +69,7 @@ export default function AppRoutes() {
         <Route path="categories/:category" element={<ShopPage/>}/>
         <Route path="cart" element={<CartPage/>}/>
         <Route path="checkout" element={<CheckoutPage/>}/>
-        <Route path="profile" element={<AccountPage/>}/>
+        <Route path="profile" element={<RequireAuth><AccountPage/></RequireAuth>}/>
         <Route path="wishlist" element={<WishlistPage/>}/>
         <Route path="contact" element={<ContactPage/>}/>
         <Route path="*" element={<StoreNotFound/>}/>

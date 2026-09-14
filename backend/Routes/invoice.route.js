@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import { getInvoices, getInvoiceById, createInvoice, updateInvoice, moveInvoiceToOrder } from "../Controllers/invoice.controller.js";
+import { protect, authorize, staffRoles } from '../middlewares/auth.middleware.js';
+const router = Router();
+const staff = authorize(...staffRoles);
+router.get('/invoices', protect, getInvoices);
+router.get('/invoices/:id', protect, getInvoiceById);
+router.post('/invoices', protect, staff, createInvoice);
+router.patch('/invoices/:id', protect, staff, updateInvoice);
+router.post('/invoices/:id/move-to-order', protect, staff, moveInvoiceToOrder);
+export default router;

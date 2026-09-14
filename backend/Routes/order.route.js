@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { checkout, getOrders, getOrderById, updateFulfillment, updateOrderStage } from "../Controllers/order.controller.js";
+import { protect, authorize, staffRoles } from '../middlewares/auth.middleware.js';
+import { rateLimit } from 'express-rate-limit';
+const router = Router();
+const staff = authorize(...staffRoles);
+router.post('/checkout', rateLimit({ windowMs: 15 * 60 * 1000, limit: 20 }), protect, checkout);
+router.get('/orders', protect, getOrders);
+router.get('/orders/:id', protect, getOrderById);
+router.patch('/orders/:id', protect, staff, updateFulfillment);
+router.post('/orders/:id/stage', protect, authorize(...staffRoles, 'Delivery Rider'), updateOrderStage);
+export default router;

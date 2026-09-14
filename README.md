@@ -81,3 +81,7 @@ Calculation checks: node --test tests/documents.test.js. Build and lint: npm.cmd
 ## Dashboard
 
 /admin opens the dashboard; /admin/dashboard redirects there. Summary cards derive counts from shared demo state, and monthly revenue sums paid invoices in the current month and selected currency (no currency conversion). Recent activity combines document dates and stock movement timestamps. Low-stock alerts and View All use the same reorder threshold as the products list. Inventory starts with an explicit sample stock snapshot; movement data represents only partial history. Screenshot growth percentages are omitted because no comparative dataset exists.
+
+## MERN backend
+
+The Express/Mongoose API lives in backend/. See backend/README.md for Atlas setup, administrator bootstrap, API contracts and limitations. Run npm run dev:backend after configuring backend/.env. The React app remains in demo mode until its providers are migrated to the API.

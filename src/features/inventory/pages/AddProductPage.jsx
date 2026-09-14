@@ -10,9 +10,9 @@ export default function AddProductPage(){
  const [images,setImages]=useState([]),[imagesBusy,setImagesBusy]=useState(false)
  const draft=useLocation().state?.productDraft || {};
  const {addProduct}=useInventory(); const navigate=useNavigate(); const [error,setError]=useState('')
- function submit(e){e.preventDefault(); const data=Object.fromEntries(new FormData(e.currentTarget)); for(const key of ['name','sku','category']) if(!String(data[key]||'').trim()){setError('Please fill in all required fields.');return}
+ async function submit(e){e.preventDefault(); const data=Object.fromEntries(new FormData(e.currentTarget)); for(const key of ['name','sku','category']) if(!String(data[key]||'').trim()){setError('Please fill in all required fields.');return}
  const product={...data,images,name:data.name.trim(),sku:data.sku.trim(),stock:Number(data.stock),price:Number(data.price),cost:Number(data.cost),reorder:Number(data.reorder)}
- const failure=addProduct(product); if(failure){setError(failure);return} navigate('/admin/products',{state:{saved:true}})
+ const failure= await addProduct(product); if(failure){setError(failure);return} navigate('/admin/products',{state:{saved:true}})
  }
  return <><div className="flex items-start gap-5"><Link to="/admin/products" aria-label="Back to products" className="mt-2"><ArrowLeft/></Link><PageHeading title="Add New Product" subtitle="Add a new product to your inventory"/></div>
  <form onSubmit={submit} className="grid gap-6 rounded-xl border border-outline p-5 lg:p-6">

@@ -17,16 +17,16 @@ export default function CategoriesPage() {
   const exists = categories.includes(category)
 
   function open(mode, name = '') { setError(''); setDialog({ mode, name }) }
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault()
     const name = String(new FormData(event.currentTarget).get('name')).trim()
-    const failure = saveCategory(name, dialog.mode === 'edit' ? dialog.name : undefined)
+    const failure = await saveCategory(name, dialog.mode === 'edit' ? dialog.name : undefined)
     if (failure) { setError(failure); return }
     if (category === dialog.name) navigate('/admin/categories/' + encodeURIComponent(name))
     setNotice('Category saved.'); setDialog(null)
   }
-  function remove() {
-    const failure = deleteCategory(dialog.name)
+  async function remove() {
+    const failure = await deleteCategory(dialog.name)
     if (failure) { setError(failure); return }
     if (category === dialog.name) navigate('/admin/categories')
     setNotice('Category deleted.'); setDialog(null)

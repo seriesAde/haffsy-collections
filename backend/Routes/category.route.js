@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { getCategories, createCategory, updateCategory, deleteCategory } from "../Controllers/category.controller.js";
+import { protect, authorize, staffRoles } from '../middlewares/auth.middleware.js';
+const router = Router();
+const staff = authorize(...staffRoles);
+router.get('/categories', getCategories);
+router.post('/categories', protect, staff, createCategory);
+router.patch('/categories/:id', protect, staff, updateCategory);
+router.delete('/categories/:id', protect, authorize('Admin', 'Manager'), deleteCategory);
+export default router;
