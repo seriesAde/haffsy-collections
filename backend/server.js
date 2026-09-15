@@ -1,3 +1,4 @@
+import wishlistRoutes from './Routes/wishlist.route.js';
 import categoryRoutes from './Routes/category.route.js';
 import productRoutes from './Routes/product.route.js';
 import stockRoutes from './Routes/stock.route.js';
@@ -49,6 +50,7 @@ export function createApp(config) {
     app.use('/api/auth', authRoutes);
     
     app.use('/api/uploads', uploadRoutes);
+    app.use('/api/wishlist', wishlistRoutes);
     
     app.use('/api', categoryRoutes);
     app.use('/api', productRoutes);

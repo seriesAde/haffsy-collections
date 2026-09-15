@@ -8,3 +8,5 @@ export { default as Invoice } from './invoice.model.js';
 export { default as Order } from './order.model.js';
 export { default as Payment } from './payment.model.js';
 export { default as Settings } from './settings.model.js';
+
+export { default as Wishlist } from './wishlist.model.js';
