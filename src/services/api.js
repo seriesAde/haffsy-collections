@@ -1,4 +1,4 @@
-export const apiBase = import.meta.env?.VITE_API_URL || '/api'
+export const apiBase = import.meta.env?.VITE_API_URL || 'https://haffsy-collections.onrender.com/api'
 export async function api(path, options = {}) {
   let response
   try {

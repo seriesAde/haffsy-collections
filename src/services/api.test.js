@@ -1,7 +1,67 @@
-﻿import test from 'node:test'
-import assert from 'node:assert/strict'
-import {api,list,upload} from './api.js'
-test('requests use cookies and serialize JSON',async t=>{let seen;t.mock.method(globalThis,'fetch',async(url,options)=>{seen={url,options};return new Response(JSON.stringify({data:{id:'1'}}))});await api('/products',{method:'POST',body:{name:'Test'}});assert.equal(seen.options.credentials,'include');assert.equal(seen.options.body,'{"name":"Test"}');assert.equal(seen.url,'/api/products')})
-test('validation failures are exposed, not treated as successful saves',async t=>{t.mock.method(globalThis,'fetch',async()=>new Response(JSON.stringify({error:'Invalid input',details:[{field:'name',message:'Required'}]}),{status:400}));await assert.rejects(()=>api('/products'),/name: Required/)})
-test('list follows pagination to load all products',async t=>{let calls=0;t.mock.method(globalThis,'fetch',async()=>new Response(JSON.stringify({data:Array.from({length:++calls===1?100:1},(_,i)=>({id:i})),total:101})));assert.equal((await list('/products')).length,101);assert.equal(calls,2)})
-test('uploads let fetch set the multipart boundary',async t=>{let options;t.mock.method(globalThis,'fetch',async(_,o)=>{options=o;return new Response(JSON.stringify({data:{id:'abc'}}))});const image=await upload(new File(['image'],'test.png',{type:'image/png'}),'product');assert.ok(options.body instanceof FormData);assert.equal(options.headers['Content-Type'],undefined);assert.equal(image.url,'/api/uploads/abc')})
+﻿import test from "node:test";
+import assert from "node:assert/strict";
+import { api, list, upload } from "./api.js";
+test("requests use cookies and serialize JSON", async (t) => {
+  let seen;
+  t.mock.method(globalThis, "fetch", async (url, options) => {
+    seen = { url, options };
+    return new Response(JSON.stringify({ data: { id: "1" } }));
+  });
+  await api("/products", { method: "POST", body: { name: "Test" } });
+  assert.equal(seen.options.credentials, "include");
+  assert.equal(seen.options.body, '{"name":"Test"}');
+  assert.equal(
+    seen.url,
+    "https://haffsy-collections.onrender.com/api/products",
+  );
+});
+test("validation failures are exposed, not treated as successful saves", async (t) => {
+  t.mock.method(
+    globalThis,
+    "fetch",
+    async () =>
+      new Response(
+        JSON.stringify({
+          error: "Invalid input",
+          details: [{ field: "name", message: "Required" }],
+        }),
+        { status: 400 },
+      ),
+  );
+  await assert.rejects(() => api("/products"), /name: Required/);
+});
+test("list follows pagination to load all products", async (t) => {
+  let calls = 0;
+  t.mock.method(
+    globalThis,
+    "fetch",
+    async () =>
+      new Response(
+        JSON.stringify({
+          data: Array.from({ length: ++calls === 1 ? 100 : 1 }, (_, i) => ({
+            id: i,
+          })),
+          total: 101,
+        }),
+      ),
+  );
+  assert.equal((await list("/products")).length, 101);
+  assert.equal(calls, 2);
+});
+test("uploads let fetch set the multipart boundary", async (t) => {
+  let options;
+  t.mock.method(globalThis, "fetch", async (_, o) => {
+    options = o;
+    return new Response(JSON.stringify({ data: { id: "abc" } }));
+  });
+  const image = await upload(
+    new File(["image"], "test.png", { type: "image/png" }),
+    "product",
+  );
+  assert.ok(options.body instanceof FormData);
+  assert.equal(options.headers["Content-Type"], undefined);
+  assert.equal(
+    image.url,
+    "https://haffsy-collections.onrender.com/api/uploads/abc",
+  );
+});
