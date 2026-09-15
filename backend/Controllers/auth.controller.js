@@ -13,7 +13,8 @@ function cookieOptions(config) {
     return {
         httpOnly: true,
         secure: config.production,
-        sameSite: "lax",
+        // Vercel and Render are different sites; allow HTTPS session cookies across them.
+        sameSite: config.production ? "none" : "lax",
         path: "/",
         maxAge: 8 * 60 * 60 * 1000
     };

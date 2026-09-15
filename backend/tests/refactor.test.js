@@ -55,5 +55,8 @@ test('separate app instances retain their own cookie configuration', async () =>
     const secure = await request(secureApp).post('/api/auth/logout').set('Origin', config.origin);
     const local = await request(app).post('/api/auth/logout').set('Origin', config.origin);
     assert.match(secure.headers['set-cookie'][0], /Secure/);
+    assert.match(secure.headers['set-cookie'][0], /SameSite=None/);
+    assert.match(secure.headers['set-cookie'][0], /HttpOnly/);
+    assert.match(local.headers['set-cookie'][0], /SameSite=Lax/);
     assert.doesNotMatch(local.headers['set-cookie'][0], /Secure/);
 });
