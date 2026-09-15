@@ -1,4 +1,6 @@
-export const apiBase = import.meta.env?.VITE_API_URL || 'https://haffsy-collections.onrender.com/api' 
+// Production uses the Vercel proxy so login and private files share the site's cookie.
+// Keep the configurable direct endpoint for local development.
+export const apiBase = import.meta.env?.PROD ? '/api' : import.meta.env?.VITE_API_URL || 'https://haffsy-collections.onrender.com/api'
 export async function api(path, options = {}) {
   let response
   try {

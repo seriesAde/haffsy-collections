@@ -25,6 +25,11 @@ export function createApp(config) {
     const app = express();
     app.locals.config = config;
     app.disable('x-powered-by');
+    // Account responses must not be shared by the frontend's reverse proxy.
+    app.use('/api', (_req, res, next) => {
+        res.set('Cache-Control', 'private, no-store');
+        next();
+    });
     app.use(helmet({
         crossOriginResourcePolicy: {
             policy: 'cross-origin'
