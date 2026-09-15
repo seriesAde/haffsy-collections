@@ -1,3 +1,4 @@
+import { uploadMedia, downloadMedia, destroyMedia } from '../services/cloudinary.service.js';
 import { detectMime } from '../middlewares/upload.middleware.js';
 import Upload from '../models/upload.model.js';
 import { authenticateRequest, staffRoles } from '../middlewares/auth.middleware.js';
@@ -11,14 +12,21 @@ export const uploadFile = asyncHandler(async (req, res) => {
     if (!req.file) throw new ApiError(400, 'Choose a file.');
     const mime = detectMime(req.file.buffer);
     if (!mime || purpose === 'product' && mime === 'application/pdf') throw new ApiError(400, 'Unsupported file contents.');
-    const data = await Upload.create({
+    const asset = await uploadMedia(req.file.buffer, mime, purpose);
+    let data;
+    try {
+        data = await Upload.create({
         purpose,
         owner: req.user.id,
         name: req.file.originalname.slice(0, 150),
         size: req.file.size,
         mime,
-        data: req.file.buffer
-    });
+        cloudinary: asset
+        });
+    } catch (error) {
+        await destroyMedia(asset).catch(() => console.error("Cloudinary cleanup failed for asset", asset.assetId));
+        throw error;
+    }
     res.status(201).json({
         data: {
             id: data.id,
@@ -37,7 +45,9 @@ export const authorizeFile = asyncHandler(async (req, res, next) => {
     if (!staffRoles.includes(req.user.role) && String(data.owner) !== req.user.id) throw new ApiError(403, 'File access denied.');
     next();
 });
-export const sendFile = asyncHandler((req, res) => {
+export const sendFile = asyncHandler(async (req, res) => {
     const file = req.upload;
-    res.set('Content-Type', file.mime).set('Cache-Control', file.purpose === 'product' ? 'public, max-age=3600' : 'private, no-store').set('Content-Disposition', file.mime === 'application/pdf' ? 'attachment; filename="evidence.pdf"' : 'inline').send(file.data);
+    const contents = file.cloudinary?.assetId ? await downloadMedia(file.cloudinary) : file.data;
+    if (!contents) throw new ApiError(404, 'File contents are unavailable.');
+    res.set('Content-Type', file.mime).set('Cache-Control', file.purpose === 'product' ? 'public, max-age=3600' : 'private, no-store').set('Content-Disposition', file.mime === 'application/pdf' ? 'attachment; filename="evidence.pdf"' : 'inline').send(contents);
 });

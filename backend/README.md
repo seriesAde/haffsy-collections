@@ -64,7 +64,11 @@ Admins can upload a receipt and record a received cash/transfer payment in Order
 
 Atlas transactions protect category deletion/product reassignment, stock adjustments, checkout, and quotation conversion. Product names/prices are captured on documents. Checkout always uses server prices and decrements stock atomically. Admin-created invoices do not decrement stock automatically; use stock adjustments until the admin fulfillment stock workflow is finalized. Currency values are not converted.
 
-Uploads are limited to 10 MB, checked by file signature, and stored in MongoDB for this initial version. Product images are public; evidence is private. This is not malware scanning. Move blobs to object storage and add scanning before production-scale uploads.
+Uploads are limited to 10 MB and checked by file signature. New media is stored in Cloudinary, with metadata in MongoDB. Product images are public through the API; receipts use authenticated Cloudinary assets and the API checks ownership/staff access before proxying their bytes. Existing MongoDB file contents remain readable.
+
+Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET in backend/.env, then restart nodemon. No upload preset is required. Missing credentials return a clear 503 on new uploads without preventing server startup. For PDF receipts, enable PDF delivery in your Cloudinary product environment if it is restricted. Credentials must never be placed in VITE_ variables. Cloudinary cannot be tested live until credentials are configured.
+
+Cloudinary REST reference: https://cloudinary.com/documentation/image_upload_api_reference
 
 No live email, gateway, refund/cancellation workflow, password reset, 2FA, or PDF server renderer is implemented. Delivery stages update from authorized API actions; courier callbacks can call this layer later. Checkout does not yet implement idempotency keys: do not automatically retry it after an ambiguous network failure. Payment verification is a manual Admin/Manager action.
 

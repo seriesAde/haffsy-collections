@@ -36,7 +36,7 @@ export default function MobileNavigation({ name }) {
             {categories.map(category => <Link key={category} className="block rounded-lg px-3 py-3 text-sm hover:bg-background" to={'/categories/' + encodeURIComponent(category)} onClick={close}>{category}</Link>)}
             {!categories.length && <p className="px-3 py-2 text-sm text-muted">No categories yet.</p>}
           </div>
-          {[['Wishlist','/wishlist'],['Profile & orders','/profile'],['Cart','/cart'],['Contact','/contact']].map(([label,path]) => <Link key={path} className="block rounded-lg px-3 py-3 hover:bg-background" to={path} onClick={close}>{label}</Link>)}
+          {[['Wishlist','/wishlist'],['Profile','/profile'],['Orders','/orders'],['Cart','/cart'],['Contact','/contact']].map(([label,path]) => <Link key={path} className="block rounded-lg px-3 py-3 hover:bg-background" to={path} onClick={close}>{label}</Link>)}
         </nav>
       </div>
     </dialog>

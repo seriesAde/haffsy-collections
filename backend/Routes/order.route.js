@@ -8,5 +8,5 @@ router.post('/checkout', rateLimit({ windowMs: 15 * 60 * 1000, limit: 20 }), pro
 router.get('/orders', protect, getOrders);
 router.get('/orders/:id', protect, getOrderById);
 router.patch('/orders/:id', protect, staff, updateFulfillment);
-router.post('/orders/:id/stage', protect, authorize(...staffRoles, 'Delivery Rider'), updateOrderStage);
+router.post('/orders/:id/stage', protect, authorize(...staffRoles, 'Delivery Rider', 'Customer'), updateOrderStage);
 export default router;

@@ -165,9 +165,9 @@ export const getOrders = asyncHandler(async (req, res) => {
         };
     });
     const visible = rows.filter(order => {
-        if (scope === 'pending') return order.stage !== 'Collected' && order.paymentStatus !== 'Paid';
-        if (scope === 'paid') return order.paymentStatus === 'Paid' && order.stage !== 'Collected';
-        if (scope === 'collected') return order.stage === 'Collected';
+        if (scope === 'pending') return !['Collected', 'Received'].includes(order.stage) && order.paymentStatus !== 'Paid';
+        if (scope === 'paid') return order.paymentStatus === 'Paid' && !['Collected', 'Received'].includes(order.stage);
+        if (scope === 'collected') return ['Collected', 'Received'].includes(order.stage);
         return true;
     });
     res.json({
@@ -176,6 +176,7 @@ export const getOrders = asyncHandler(async (req, res) => {
 });
 export const getOrderById = asyncHandler(async (req, res) => {
     const order = await getOrder(req);
+    await order.populate('rider', 'name phone');
     const payments = await Payment.find({
         order: order.id
     });
@@ -194,9 +195,11 @@ export const updateFulfillment = asyncHandler(async (req, res) => {
         method: z.enum(['Delivery', 'Pickup']),
         location: z.string().trim().max(1000).default(''),
         deliveryFee: money,
-        rider: objectId.nullable().default(null)
+        rider: objectId.nullable().default(null),
+        manualRider: z.object({ name: z.string().trim().min(1).max(100), phone: z.string().trim().min(5).max(40) }).strict().nullable().default(null)
     }).strict().parse(req.body);
     if (input.method === 'Delivery' && !input.location) throw new ApiError(400, 'Delivery address is required.');
+    if (input.rider && input.manualRider) throw new ApiError(400, 'Choose one rider source.');
     if (input.rider && !(await User.exists({
         _id: input.rider,
         role: 'Delivery Rider',
@@ -211,7 +214,8 @@ export const updateFulfillment = asyncHandler(async (req, res) => {
         ...(input.method === 'Pickup' ? {
             location: '',
             deliveryFee: 0,
-            rider: null
+            rider: null,
+            manualRider: null
         } : {})
     }, {
         new: true,
@@ -229,13 +233,14 @@ export const updateOrderStage = asyncHandler(async (req, res) => {
     } = z.object({
         stage: z.string()
     }).strict().parse(req.body);
+    if (req.user.role === 'Customer' && (order.method !== 'Delivery' || stage !== 'Received' || !['Sent out', 'Received'].includes(order.stage))) throw new ApiError(403, 'You can only confirm receipt of a dispatched delivery.');
     // Retrying an already completed transition must not append another event.
     if (stage === order.stage) {
         res.json({ data: order });
         return;
     }
     if (!canTransition(order.method, order.stage, stage)) throw new ApiError(409, 'Invalid next order stage.');
-    if (stage === 'Sent out' && !order.rider) throw new ApiError(409, 'Select a rider and save fulfillment before marking this order Sent out.');
+    if (stage === 'Sent out' && !order.rider && !(order.manualRider?.name && order.manualRider?.phone)) throw new ApiError(409, 'Select a rider and save fulfillment before marking this order Sent out.');
     const data = await Order.findOneAndUpdate({
         _id: order.id,
         stage: order.stage

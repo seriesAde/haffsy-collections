@@ -18,9 +18,9 @@ export default function OrdersPage(){
       return `${invoice.id} ${invoice.customer}`.toLowerCase().includes(search)
     })
     .filter(({order}) => {
-      if (scope === 'pending') return order?.paymentStatus !== 'Paid' && order?.status !== 'Collected'
-      if (scope === 'paid') return order?.paymentStatus === 'Paid' && order?.status !== 'Collected'
-      if (scope === 'collected') return order?.status === 'Collected'
+      if (scope === 'pending') return order?.paymentStatus !== 'Paid' && !['Collected','Received'].includes(order?.status)
+      if (scope === 'paid') return order?.paymentStatus === 'Paid' && !['Collected','Received'].includes(order?.status)
+      if (scope === 'collected') return ['Collected','Received'].includes(order?.status)
       return true
     })
 
@@ -36,8 +36,8 @@ export default function OrdersPage(){
         <select className={inputClass} value={scope} onChange={e => setScope(e.target.value)}>
           <option value="all">All orders</option>
           <option value="pending">Pending orders</option>
-          <option value="paid">Paid but not collected</option>
-          <option value="collected">Collected orders</option>
+          <option value="paid">Paid but not collected / received</option>
+          <option value="collected">Collected / received orders</option>
         </select>
       </label>
     </div>

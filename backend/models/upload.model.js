@@ -19,9 +19,15 @@ const uploadSchema = new mongoose.Schema({
     size: {
         type: Number
     },
+    cloudinary: {
+        assetId: { type: String },
+        publicId: { type: String },
+        resourceType: { type: String, enum: ['image', 'raw'] },
+        type: { type: String, enum: ['upload', 'authenticated'] }
+    },
     data: {
         type: Buffer,
-        required: true,
+        required: function () { return !this.cloudinary?.assetId; },
         select: false
     }
 }, {

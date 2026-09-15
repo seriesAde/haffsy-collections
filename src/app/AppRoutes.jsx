@@ -1,3 +1,5 @@
+import StoreOrdersPage from '../features/storefront/pages/StoreOrdersPage'
+import StoreOrderDetailsPage from '../features/storefront/pages/StoreOrderDetailsPage'
 import SaleDetailsPage from '../features/reports/pages/SaleDetailsPage'
 import { RequireAuth } from '../features/auth/AuthProvider'
 import StoreLayout from '../layouts/StoreLayout'
@@ -69,7 +71,7 @@ export default function AppRoutes() {
         <Route path="categories/:category" element={<ShopPage/>}/>
         <Route path="cart" element={<CartPage/>}/>
         <Route path="checkout" element={<CheckoutPage/>}/>
-        <Route path="profile" element={<RequireAuth><AccountPage/></RequireAuth>}/>
+        <Route path="orders" element={<RequireAuth><StoreOrdersPage/></RequireAuth>}/><Route path="orders/:id" element={<RequireAuth><StoreOrderDetailsPage/></RequireAuth>}/><Route path="profile" element={<RequireAuth><AccountPage/></RequireAuth>}/>
         <Route path="wishlist" element={<WishlistPage/>}/>
         <Route path="contact" element={<ContactPage/>}/>
         <Route path="*" element={<StoreNotFound/>}/>

@@ -76,6 +76,10 @@ const orderSchema = new mongoose.Schema({
         ref: 'User',
         default: null
     },
+    manualRider: {
+        name: { type: String, trim: true, maxlength: 100 },
+        phone: { type: String, trim: true, maxlength: 40 }
+    },
     stage: {
         type: String,
         enum: ['Packing', 'Sent out', 'Received', 'Ready for pickup', 'Collected'],
